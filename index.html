@@ -5,8 +5,20 @@
   <title>交易策略儀表板</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #myChart { max-width: 900px; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px; 
+      text-align: center;
+    }
+    #chart-container {
+      margin: 0 auto;
+      max-width: 800px;
+      max-height: 400px;
+    }
+    canvas {
+      width: 100% !important;   /* 自動填滿容器 */
+      height: 400px !important; /* 固定高度 */
+    }
     .error { color: red; }
   </style>
 </head>
@@ -14,19 +26,21 @@
   <h2 id="title">載入中...</h2>
   <p id="summary"></p>
   <p id="error" class="error"></p>
-  <canvas id="myChart"></canvas>
+
+  <div id="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
 
   <script>
     const REST_URL = "https://saving-reptile-5449.upstash.io";
-    const READ_TOKEN = "AhVJAAIgcDIekWfaJj-buN0PC-nSvD-lbELfTqQZpjEh6jM6z0OuAA";  // 建議只用 Read-only Token
+    const READ_TOKEN = "AhVJAAIgcDIekWfaJj-buN0PC-nSvD-lbELfTqQZpjEh6jM6z0OuAA";  
     const headers = { "Authorization": `Bearer ${READ_TOKEN}` };
 
     async function fetchData(key) {
       const res = await fetch(`${REST_URL}/get/${key}`, { headers });
       const data = await res.json();
       try {
-        // Upstash /get 回傳的 result 是字串，需要再 parse 一次
-        return JSON.parse(data.result);
+        return JSON.parse(data.result); // Upstash 回傳的 result 是字串，要 parse
       } catch (e) {
         return data.result;
       }
@@ -42,12 +56,10 @@
           return;
         }
 
-        // 顯示基本資訊
         document.getElementById("title").innerText = `${board.name} (${board.symbol})`;
         document.getElementById("summary").innerText =
           `總收益率: ${(board.return_total * 100).toFixed(2)}% | 最大回撤: ${(board.max_drawdown * 100).toFixed(2)}%`;
 
-        // 準備 Chart.js 資料
         const ctx = document.getElementById("myChart").getContext("2d");
         const labels = series.map(d => d.date);
         const equity = series.map(d => d.equity);
@@ -73,6 +85,7 @@
             ]
           },
           options: {
+            maintainAspectRatio: false, // ⚡ 允許自訂寬高
             responsive: true,
             interaction: { mode: 'index', intersect: false },
             stacked: false,
