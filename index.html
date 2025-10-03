@@ -1,71 +1,61 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>交易策略儀表板</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <h2 id="title"></h2>
-  <p id="summary"></p>
-  <canvas id="myChart"></canvas>
+<script>
+  const REST_URL = "https://saving-reptile-5449.upstash.io";
+  const READ_TOKEN = "AhVJAAIgcDIekWfaJj-buN0PC-nSvD-lbELfTqQZpjEh6jM6z0OuAA";
+  const headers = { "Authorization": `Bearer ${READ_TOKEN}` };
 
-  <script>
-    const REST_URL = "https://saving-reptile-5449.upstash.io";
-    const READ_TOKEN = "AhVJAAIgcDIekWfaJj-buN0PC-nSvD-lbELfTqQZpjEh6jM6z0OuAA";  // 建議用 Read-only Token
-    const headers = { "Authorization": `Bearer ${READ_TOKEN}` };
-
-    async function fetchData(key) {
-      const res = await fetch(`${REST_URL}/get/${key}`, { headers });
-      const data = await res.json();
+  async function fetchData(key) {
+    const res = await fetch(`${REST_URL}/get/${key}`, { headers });
+    const data = await res.json();
+    try {
+      return JSON.parse(data.result);   // 🚀 這裡一定要 parse
+    } catch (e) {
       return data.result;
     }
+  }
 
-    async function main() {
-      const board = await fetchData("board:demo");
-      const series = await fetchData("series:demo:equity");
+  async function main() {
+    const board = await fetchData("board:demo");
+    const series = await fetchData("series:demo:equity");
 
-      document.getElementById("title").innerText = `${board.name} (${board.symbol})`;
-      document.getElementById("summary").innerText =
-        `總收益率: ${(board.return_total*100).toFixed(2)}% | 最大回撤: ${(board.max_drawdown*100).toFixed(2)}%`;
+    document.getElementById("title").innerText = `${board.name} (${board.symbol})`;
+    document.getElementById("summary").innerText =
+      `總收益率: ${(board.return_total*100).toFixed(2)}% | 最大回撤: ${(board.max_drawdown*100).toFixed(2)}%`;
 
-      const ctx = document.getElementById("myChart").getContext("2d");
-      const labels = series.map(d => d.date);
-      const equity = series.map(d => d.equity);
-      const price = series.map(d => d.eth_close);
+    const ctx = document.getElementById("myChart").getContext("2d");
+    const labels = series.map(d => d.date);
+    const equity = series.map(d => d.equity);
+    const price = series.map(d => d.eth_close);
 
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Equity',
-              data: equity,
-              borderColor: 'blue',
-              yAxisID: 'y'
-            },
-            {
-              label: 'ETH Price',
-              data: price,
-              borderColor: 'orange',
-              yAxisID: 'y1'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          interaction: { mode: 'index', intersect: false },
-          stacked: false,
-          scales: {
-            y: { type: 'linear', position: 'left', title: { display: true, text: 'Equity' }},
-            y1: { type: 'linear', position: 'right', title: { display: true, text: 'ETH Price' }, grid: { drawOnChartArea: false } }
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Equity',
+            data: equity,
+            borderColor: 'blue',
+            yAxisID: 'y'
+          },
+          {
+            label: 'ETH Price',
+            data: price,
+            borderColor: 'orange',
+            yAxisID: 'y1'
           }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        stacked: false,
+        scales: {
+          y: { type: 'linear', position: 'left', title: { display: true, text: 'Equity' }},
+          y1: { type: 'linear', position: 'right', title: { display: true, text: 'ETH Price' }, grid: { drawOnChartArea: false } }
         }
-      });
-    }
+      }
+    });
+  }
 
-    main();
-  </script>
-</body>
-</html>
+  main();
+</script>
