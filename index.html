@@ -1,235 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>交易策略儀表板（多策略）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light only"> <!-- ← 新增 -->
-  <meta name="supported-color-schemes" content="light"> <!-- ← 新增 -->
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Chart.js 範例集</title>
   <style>
-    :root { 
-      --w: 1100px; 
-      color-scheme: light only;              /* ← 禁止 UA/容器自動套暗色 */
-    }
-    html, body {
-      background: #fff !important;           /* ← 強制白底（避免 iframe 透明看到 Notion 深色） */
-      color: #222;
-    }
-    .panel, #chart-wrap, #chart-card, table, th, td {
-      background: #fff !important;           /* ← 表格/卡片也維持白底 */
-    }
-    canvas {
-      background: #fff !important;           /* ← Chart.js 的 canvas 預設透明，補白底 */
-    }
-    .muted { color: #666; }
-
-    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; }
-    th, td { border-bottom: 1px solid #eee; padding: 10px 8px; text-align: left; }
-    th { background: #fafafa; font-weight: 600; }
-    tr:hover { background: #f8fbff; }
-    .num { text-align: right; font-variant-numeric: tabular-nums; }
-    .pos { color: #0b7d34; }
-    .neg { color: #b20000; }
-    .btn {
-      padding: 6px 12px; border: 1px solid #ddd; background: #fff; border-radius: 10px; cursor: pointer;
-      transition: box-shadow .15s ease, transform .03s ease;
-    }
-    .btn:hover { box-shadow: 0 2px 10px rgba(0,0,0,.06); }
-    .btn:active { transform: translateY(1px); }
-    .toolbar { display: flex; gap: 8px; align-items: center; margin: 8px 0 16px; }
-    #chart-wrap { max-width: var(--w); margin: 16px auto 0; }
-    #chart-card { border: 1px solid #eee; border-radius: 16px; padding: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.04); }
-    #chart-title { margin: 0 0 8px; font-size: 18px; }
-    #chart-sub { margin: 0 0 12px; color: #666; font-size: 14px; }
-    #chart-container { position: relative; height: 420px; }
+    :root { --bg:#f6f7fb; --card:#fff; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif; background:var(--bg); color:var(--text); }
+    header { padding: 28px 18px; max-width: 1100px; margin: 0 auto; }
+    h1 { margin:0 0 8px; font-size: 22px; }
+    p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 18px 30px; }
+    .grid { display:grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .card { background:var(--card); border:1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .card h2 { margin:0 0 6px; font-size: 18px; }
+    .card p { margin:0 0 12px; }
+    a.btn { display:inline-block; padding: 10px 12px; border-radius: 10px; border:1px solid var(--border); text-decoration:none; color:var(--text); background:#fafafa; }
+    a.btn:hover { background:#f3f4f6; }
+    footer { max-width: 1100px; margin: 0 auto; padding: 0 18px 30px; color: var(--muted); font-size: 13px; }
+    code { background:#f3f4f6; padding:2px 6px; border-radius: 6px; }
   </style>
 </head>
 <body>
-  <div class="panel">
-    <h1>交易策略儀表板（多策略）</h1>
-    <div id="error" class="error"></div>
+  <header>
+    <h1>Chart.js 範例集（靜態網頁）</h1>
+    <p>此資料夾包含兩個靜態網頁：<b>基礎圖表範例</b> 與 <b>外掛擴充圖表範例</b>。直接用瀏覽器打開對應的 <code>.html</code> 檔即可。</p>
+  </header>
 
-    <div class="toolbar">
-      <span id="count" class="muted"></span>
-    </div>
+  <main class="wrap">
+    <section class="grid">
+      <article class="card">
+        <h2>基礎圖表範例</h2>
+        <p>展示常見的內建圖表類型（Line / Bar / Radar / Pie / Doughnut / PolarArea / Bubble / Scatter）。</p>
+        <a class="btn" href="./basic_charts.html">開啟頁面</a>
+      </article>
 
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th style="width:34%;">title</th>
-          <th style="width:16%;">symbol</th>
-          <th class="num" style="width:16%;">總收益率</th>
-          <th class="num" style="width:16%;">最大回撤</th>
-          <th style="width:18%;">按鈕</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+      <article class="card">
+        <h2>外掛擴充圖表範例</h2>
+        <p>展示透過外掛（plugins）加入的擴充圖表類型（Financial / Treemap / Matrix / Boxplot / Sankey / WordCloud）。</p>
+        <a class="btn" href="./extended_charts.html">開啟頁面</a>
+      </article>
+    </section>
+  </main>
 
-    <div id="chart-wrap" style="display:none;">
-      <div id="chart-card">
-        <h3 id="chart-title"></h3>
-        <p id="chart-sub" class="muted"></p>
-        <div id="chart-container">
-          <canvas id="myChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ====== Upstash 讀取設定（只放 Read-Only Token）======
-    const REST_URL = "https://saving-reptile-5449.upstash.io";   // 你的 Upstash REST_URL
-    const READ_TOKEN = "AhVJAAIgcDIekWfaJj-buN0PC-nSvD-lbELfTqQZpjEh6jM6z0OuAA"; // Read-Only Token
-    const headers = { "Authorization": `Bearer ${READ_TOKEN}` };
-
-    // ====== Utils ======
-    const $ = (sel) => document.querySelector(sel);
-    const fmtPct = (x) => {
-      const s = (x * 100).toFixed(2) + "%";
-      return x >= 0 ? `<span class="pos">${s}</span>` : `<span class="neg">${s}</span>`;
-    };
-    const fmtDrawdown = (x) => `<span class="${x <= 0 ? 'neg' : 'pos'}">${(x * 100).toFixed(2)}%</span>`;
-
-    async function upstashGet(key) {
-      const res = await fetch(`${REST_URL}/get/${key}`, { headers });
-      if (!res.ok) throw new Error(`GET ${key} failed: ${res.status}`);
-      const data = await res.json();
-      try { return JSON.parse(data.result); } catch { return data.result; }
-    }
-
-    // ====== 狀態 ======
-    let strategies = [];      // N 策略
-    let chart;                // Chart.js 實例
-    const cache = new Map();  // 快取 board/series
-
-    function renderTable() {
-      const tbody = $("#tbody");
-      tbody.innerHTML = "";
-
-      for (const s of strategies) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${s.title}</td>
-          <td>${s.symbol}</td>
-          <td class="num">${fmtPct(s.return_total)}</td>
-          <td class="num">${fmtDrawdown(s.max_drawdown)}</td>
-          <td><button class="btn" data-id="${s.id}">查看圖表</button></td>
-        `;
-        tbody.appendChild(tr);
-      }
-
-      // 綁定按鈕
-      tbody.querySelectorAll("button[data-id]").forEach(btn => {
-        btn.addEventListener("click", () => showChart(btn.dataset.id));
-      });
-
-      // 顯示列數（N），含表頭視覺上為 N+1 行
-      $("#count").textContent = `共 ${strategies.length} 策略（表格行數：${strategies.length + 1}，含表頭）`;
-    }
-
-    async function showChart(id) {
-      try {
-        $("#chart-wrap").style.display = "block";
-
-        // 讀 board + series（快取）
-        let board = cache.get(`board:${id}`);
-        if (!board) {
-          board = await upstashGet(`board:${id}`);
-          cache.set(`board:${id}`, board);
-        }
-        let series = cache.get(`series:${id}:equity`);
-        if (!series) {
-          series = await upstashGet(`series:${id}:equity`);
-          cache.set(`series:${id}:equity`, series);
-        }
-
-        // 標題與摘要
-        $("#chart-title").textContent = `${board.name}（${board.symbol}）`;
-        $("#chart-sub").textContent =
-          `總收益率：${(board.return_total * 100).toFixed(2)}% ｜ 年化：${(board.annualized_return * 100).toFixed(2)}% ｜ 最大回撤：${(board.max_drawdown * 100).toFixed(2)}% ｜ 期間：${(board.started_at ?? "").slice(0,10)} ～ ${(board.updated_at ?? "").slice(0,10)}`;
-
-        // 準備資料
-        const labels = series.map(d => d.date);
-        const equity = series.map(d => d.equity);
-        const price = series.map(d => d.eth_close);
-
-        // 畫圖或更新
-        const ctx = document.getElementById("myChart").getContext("2d");
-        if (!chart) {
-          chart = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels,
-              datasets: [
-                { label: "Equity", data: equity, borderColor: "blue", borderWidth: 2, tension: .1, yAxisID: "y" },
-                { label: "ETH Close", data: price, borderColor: "orange", borderWidth: 2, tension: .1, yAxisID: "y1" }
-              ]
-            },
-            options: {
-              maintainAspectRatio: false,
-              responsive: true,
-              interaction: { mode: "index", intersect: false },
-              stacked: false,
-              plugins: {
-                legend: { 
-                  display: true,
-                  labels: { color: "#222" }          // ← 深色 Notion 下仍用深色文字
-                },
-                tooltip: {
-                  titleColor: "#111",                 // ← Tooltip 文字顏色
-                  bodyColor: "#111",
-                  backgroundColor: "#fff",            // ← Tooltip 白底
-                  borderColor: "#ddd",
-                  borderWidth: 1
-                }
-              },
-              scales: {
-                x: {
-                  ticks: { color: "#222" },           // ← 軸刻度文字
-                  grid: { color: "rgba(0,0,0,.08)" }  // ← 網格線淡灰
-                },
-                y: {
-                  type: "linear", position: "left",
-                  title: { display: true, text: "Equity", color: "#222" },
-                  ticks: { color: "#222" },
-                  grid: { color: "rgba(0,0,0,.08)" }
-                },
-                y1: {
-                  type: "linear", position: "right",
-                  title: { display: true, text: "ETH Price", color: "#222" },
-                  ticks: { color: "#222" },
-                  grid: { drawOnChartArea: false, color: "rgba(0,0,0,.08)" }
-                }
-              }
-            }
-          });
-        } else {
-          chart.data.labels = labels;
-          chart.data.datasets[0].data = equity;
-          chart.data.datasets[1].data = price;
-          chart.update();
-        }
-      } catch (err) {
-        $("#error").textContent = "❌ 載入錯誤：" + (err?.message || err);
-      }
-    }
-
-    (async function main() {
-      try {
-        // 讀取清單（N 策略）
-        strategies = await upstashGet("strategies:list");
-        if (!Array.isArray(strategies)) throw new Error("strategies:list 格式錯誤");
-        renderTable();
-
-        // 可選：預設先秀第一列的圖
-        if (strategies.length) showChart(strategies[0].id);
-      } catch (err) {
-        $("#error").textContent = "❌ 初始化失敗：" + (err?.message || err);
-      }
-    })();
-  </script>
+  <footer>
+    <div>提示：若某些外部 CDN 資源在你的網路環境下無法載入，可改用本機簡易伺服器（例如 VS Code Live Server）開啟。</div>
+  </footer>
 </body>
 </html>

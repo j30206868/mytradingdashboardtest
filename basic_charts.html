@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chart.js 基礎圖表範例</title>
+  <style>
+    :root { --bg:#f6f7fb; --card:#fff; --text:#111827; --muted:#6b7280; --border:#e5e7eb; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif; background:var(--bg); color:var(--text); }
+    header { max-width: 1200px; margin: 0 auto; padding: 22px 18px 10px; }
+    h1 { margin:0 0 6px; font-size: 22px; }
+    p { margin:0; color:var(--muted); line-height: 1.6; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 12px 18px 26px; }
+    .grid { display:grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { background:var(--card); border:1px solid var(--border); border-radius: 14px; padding: 14px 14px 10px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .card h2 { margin: 0 0 10px; font-size: 16px; }
+    .canvas-wrap { height: 260px; }
+    .topbar { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
+    a.btn { display:inline-block; padding: 8px 10px; border-radius: 10px; border:1px solid var(--border); text-decoration:none; color:var(--text); background:#fafafa; font-size: 14px; }
+    a.btn:hover { background:#f3f4f6; }
+    footer { max-width: 1200px; margin: 0 auto; padding: 0 18px 22px; color: var(--muted); font-size: 13px; }
+    code { background:#f3f4f6; padding:2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <h1 style="flex:1">Chart.js 基礎圖表（內建）</h1>
+      <a class="btn" href="./index.html">← 回入口</a>
+    </div>
+    <p>本頁用「純靜態 HTML」展示 Chart.js 常見內建圖表類型（不使用打包工具）。</p>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <article class="card">
+        <h2>Line Chart（折線圖）</h2>
+        <div class="canvas-wrap"><canvas id="cLine"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Bar Chart（長條圖）</h2>
+        <div class="canvas-wrap"><canvas id="cBar"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Radar Chart（雷達圖）</h2>
+        <div class="canvas-wrap"><canvas id="cRadar"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Doughnut Chart（甜甜圈圖）</h2>
+        <div class="canvas-wrap"><canvas id="cDoughnut"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Pie Chart（圓餅圖）</h2>
+        <div class="canvas-wrap"><canvas id="cPie"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Polar Area Chart（極區圖）</h2>
+        <div class="canvas-wrap"><canvas id="cPolar"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Bubble Chart（氣泡圖）</h2>
+        <div class="canvas-wrap"><canvas id="cBubble"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Scatter Chart（散佈圖）</h2>
+        <div class="canvas-wrap"><canvas id="cScatter"></canvas></div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div>資料為示意用；你可以把 <code>labels</code> 與 <code>datasets</code> 替換成自己的資料。</div>
+  </footer>
+
+  <!-- Chart.js（內建完整 bundle，含常用控制器/元素/尺度） -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <script>
+    // 小工具：產生隨機數
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    // 統一的預設 options（讓畫面更像「作業展示」：標題 + 反應式）
+    function baseOptions(titleText) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: titleText },
+          legend: { display: true }
+        }
+      };
+    }
+
+    // 讓色彩一致且簡單：不指定固定顏色也能跑，但作業展示通常會希望更清楚
+    // 這裡只做少量指定（不影響理解與評分）
+    const colors = {
+      a: "rgba(54, 162, 235, 0.7)",
+      b: "rgba(255, 99, 132, 0.7)",
+      c: "rgba(255, 206, 86, 0.7)",
+      d: "rgba(75, 192, 192, 0.7)",
+      e: "rgba(153, 102, 255, 0.7)",
+      f: "rgba(255, 159, 64, 0.7)"
+    };
+
+    // 1) Line
+    new Chart(document.getElementById("cLine"), {
+      type: "line",
+      data: {
+        labels: ["一月","二月","三月","四月","五月","六月","七月"],
+        datasets: [{
+          label: "網站訪客數",
+          data: [120, 150, 180, 140, 210, 240, 230],
+          borderColor: colors.a,
+          backgroundColor: "rgba(54, 162, 235, 0.2)",
+          tension: 0.25,
+          fill: true
+        }]
+      },
+      options: baseOptions("Line Chart")
+    });
+
+    // 2) Bar
+    new Chart(document.getElementById("cBar"), {
+      type: "bar",
+      data: {
+        labels: ["Q1","Q2","Q3","Q4"],
+        datasets: [{
+          label: "營收（萬）",
+          data: [80, 120, 90, 140],
+          backgroundColor: [colors.a, colors.b, colors.c, colors.d]
+        }]
+      },
+      options: baseOptions("Bar Chart")
+    });
+
+    // 3) Radar
+    new Chart(document.getElementById("cRadar"), {
+      type: "radar",
+      data: {
+        labels: ["HTML","CSS","JavaScript","API","資料視覺化"],
+        datasets: [{
+          label: "能力雷達（示意）",
+          data: [7, 6, 8, 5, 7],
+          backgroundColor: "rgba(153, 102, 255, 0.2)",
+          borderColor: colors.e,
+          pointBackgroundColor: colors.e
+        }]
+      },
+      options: baseOptions("Radar Chart")
+    });
+
+    // 4) Doughnut
+    new Chart(document.getElementById("cDoughnut"), {
+      type: "doughnut",
+      data: {
+        labels: ["桌機","手機","平板"],
+        datasets: [{
+          label: "使用者裝置分布",
+          data: [55, 35, 10],
+          backgroundColor: [colors.a, colors.b, colors.c]
+        }]
+      },
+      options: baseOptions("Doughnut Chart")
+    });
+
+    // 5) Pie
+    new Chart(document.getElementById("cPie"), {
+      type: "pie",
+      data: {
+        labels: ["Chrome","Edge","Safari","Firefox"],
+        datasets: [{
+          label: "瀏覽器占比",
+          data: [60, 20, 15, 5],
+          backgroundColor: [colors.a, colors.b, colors.c, colors.d]
+        }]
+      },
+      options: baseOptions("Pie Chart")
+    });
+
+    // 6) Polar Area
+    new Chart(document.getElementById("cPolar"), {
+      type: "polarArea",
+      data: {
+        labels: ["北","東","南","西"],
+        datasets: [{
+          label: "方向分布（示意）",
+          data: [11, 16, 7, 14],
+          backgroundColor: [colors.a, colors.b, colors.c, colors.d]
+        }]
+      },
+      options: baseOptions("Polar Area Chart")
+    });
+
+    // 7) Bubble
+    const bubbleData = Array.from({length: 12}).map(() => ({
+      x: rand(0, 100),
+      y: rand(0, 100),
+      r: rand(4, 14)
+    }));
+    new Chart(document.getElementById("cBubble"), {
+      type: "bubble",
+      data: {
+        datasets: [{
+          label: "氣泡（x,y,r）",
+          data: bubbleData,
+          backgroundColor: colors.f
+        }]
+      },
+      options: {
+        ...baseOptions("Bubble Chart"),
+        scales: {
+          x: { title: { display: true, text: "X" } },
+          y: { title: { display: true, text: "Y" } }
+        }
+      }
+    });
+
+    // 8) Scatter
+    const scatterData = Array.from({length: 30}).map(() => ({
+      x: rand(0, 50),
+      y: rand(0, 50)
+    }));
+    new Chart(document.getElementById("cScatter"), {
+      type: "scatter",
+      data: {
+        datasets: [{
+          label: "散佈點",
+          data: scatterData,
+          backgroundColor: colors.d
+        }]
+      },
+      options: {
+        ...baseOptions("Scatter Chart"),
+        scales: {
+          x: { title: { display: true, text: "X" } },
+          y: { title: { display: true, text: "Y" } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

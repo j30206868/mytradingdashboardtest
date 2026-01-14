@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chart.js 外掛擴充圖表範例</title>
+  <style>
+    :root { --bg:#f6f7fb; --card:#fff; --text:#111827; --muted:#6b7280; --border:#e5e7eb; --warn:#b45309; --bad:#b91c1c; --ok:#047857; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif; background:var(--bg); color:var(--text); }
+    header { max-width: 1300px; margin: 0 auto; padding: 22px 18px 10px; }
+    h1 { margin:0 0 6px; font-size: 22px; }
+    p { margin:0; color:var(--muted); line-height: 1.6; }
+    .wrap { max-width: 1300px; margin: 0 auto; padding: 12px 18px 26px; }
+    .grid { display:grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
+    .card { background:var(--card); border:1px solid var(--border); border-radius: 14px; padding: 14px 14px 10px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .card h2 { margin: 0 0 10px; font-size: 16px; }
+    .canvas-wrap { height: 300px; }
+    .topbar { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
+    a.btn { display:inline-block; padding: 8px 10px; border-radius: 10px; border:1px solid var(--border); text-decoration:none; color:var(--text); background:#fafafa; font-size: 14px; }
+    a.btn:hover { background:#f3f4f6; }
+    .note { margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .status { margin-top: 12px; padding: 10px 12px; border: 1px dashed var(--border); border-radius: 12px; background: #fff; }
+    .status h3 { margin: 0 0 8px; font-size: 14px; }
+    .status ul { margin: 0; padding-left: 18px; }
+    .status li { margin: 4px 0; }
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+    .warn { color: var(--warn); }
+    code { background:#f3f4f6; padding:2px 6px; border-radius: 6px; }
+    .small { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <h1 style="flex:1">Chart.js 擴充圖表（外掛 Plugins）</h1>
+      <a class="btn" href="./index.html">← 回入口</a>
+    </div>
+    <p>本頁示範「Chart.js 本體 + 外掛套件」可擴充出的圖表類型（例如金融 K 線、Treemap、Matrix Heatmap、Boxplot、Sankey、WordCloud）。</p>
+    <div class="note">若看到圖表空白，先按 <b>F12 → Console</b> 看是否有 <code>404</code> 或 <code>is not a registered controller</code>。頁面下方也會顯示外掛載入檢查結果。</div>
+
+    <div class="status" id="statusBox">
+      <h3>外掛載入檢查</h3>
+      <div class="small">若有任何一項顯示失敗，通常是外掛載入失敗或 CDN 被擋。</div>
+      <ul id="statusList"></ul>
+      <div id="errorList" class="small" style="margin-top:8px;"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <article class="card">
+        <h2>Financial Chart（K 線 Candlestick）</h2>
+        <div class="canvas-wrap"><canvas id="cCandle"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Financial Chart（OHLC）</h2>
+        <div class="canvas-wrap"><canvas id="cOHLC"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Treemap（樹狀圖）</h2>
+        <div class="canvas-wrap"><canvas id="cTreemap"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Matrix Heatmap（矩陣熱圖）</h2>
+        <div class="canvas-wrap"><canvas id="cMatrix"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Boxplot（箱型圖）</h2>
+        <div class="canvas-wrap"><canvas id="cBox"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>Sankey（桑基圖）</h2>
+        <div class="canvas-wrap"><canvas id="cSankey"></canvas></div>
+      </article>
+
+      <article class="card">
+        <h2>WordCloud（文字雲）</h2>
+        <div class="canvas-wrap"><canvas id="cWordCloud"></canvas></div>
+      </article>
+    </section>
+  </main>
+
+  <!-- 依序載入：Chart.js → time adapter（financial）→ plugins -->
+
+  <!-- 1) Chart.js 本體（umd full bundle） -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- 2) Time scale adapter（financial 圖會用到 time scale） -->
+  <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+
+  <!-- 3) 擴增圖表外掛（注意：都需要先載入 Chart.js） -->
+  <!-- Financial：最新版目前為 0.2.1（dist 檔名如下） -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
+
+  <!-- Treemap：3.1.0（dist 檔名如下） -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@3.1.0/dist/chartjs-chart-treemap.min.js"></script>
+
+  <!-- Matrix：@latest 會對應目前 3.0.0 -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@latest/dist/chartjs-chart-matrix.min.js"></script>
+
+  <!-- Boxplot：4.0.0（build/Chart.BoxPlot.*） -->
+  <!-- Boxplot：改用 @sgratzl/chartjs-chart-boxplot（UMD 會自動註冊 boxplot controller） -->
+  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js"></script>
+
+  <!-- Sankey：0.12.1 的 dist 檔案確定存在（若你想要固定新版，可自行改成 0.14.0 後用瀏覽器確認是否 404） -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.1/dist/chartjs-chart-sankey.min.js"></script>
+
+  <!-- WordCloud：4.4.5（build/index.umd.*） -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-wordcloud@4.4.5/build/index.umd.min.js"></script>
+
+  <script>
+    const errors = [];
+    window.addEventListener("error", (e) => {
+      // 收集全域錯誤，方便你交作業時也能自我檢查
+      errors.push(String(e.message || e.error || e));
+      renderStatus();
+    });
+
+    function baseOptions(titleText) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: titleText },
+          legend: { display: true }
+        }
+      };
+    }
+
+    function safeCreate(name, fn) {
+      try {
+        fn();
+        addStatus(name, true);
+      } catch (err) {
+        console.error("[Chart create failed]", name, err);
+        errors.push(name + " → " + (err && err.message ? err.message : String(err)));
+        addStatus(name, false);
+      }
+    }
+
+    const status = [];
+    function addStatus(name, ok) { status.push({ name, ok }); renderStatus(); }
+
+    function renderStatus() {
+      const ul = document.getElementById("statusList");
+      const errDiv = document.getElementById("errorList");
+      if (!ul || !errDiv) return;
+
+      ul.innerHTML = "";
+      status.forEach(s => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="${s.ok ? "ok" : "bad"}">${s.ok ? "✔" : "✘"}</span> ${s.name}`;
+        ul.appendChild(li);
+      });
+
+      if (errors.length) {
+        errDiv.innerHTML = `<div class="bad" style="font-weight:600;margin-bottom:4px;">偵測到錯誤（請看 Console 或以下訊息）：</div>` +
+          `<ol style="margin:0;padding-left:18px;">${errors.map(e => `<li>${escapeHtml(e)}</li>`).join("")}</ol>`;
+      } else {
+        errDiv.innerHTML = `<div class="ok" style="font-weight:600;">目前未偵測到 JS 執行錯誤。</div>`;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // ========= 1) Candlestick / OHLC =========
+    // 產生比較像真的 OHLC：open/close 不會都一樣（避免全部十字）
+    // 同時用 UTC timestamp 避免時區造成 X 軸看起來怪怪的（例如日期偏移一天）
+    function genOHLC(startUtcMs, days, startPrice) {
+      const out = [];
+      let prevClose = startPrice;
+      for (let i = 0; i < days; i++) {
+        const dayMs = startUtcMs + i * 24 * 60 * 60 * 1000;
+        const open = prevClose + (Math.random() - 0.5) * 6;         // +-3
+        const close = open + (Math.random() - 0.5) * 10;            // +-5
+        const high = Math.max(open, close) + Math.random() * 6;     // +0~6
+        const low  = Math.min(open, close) - Math.random() * 6;     // -0~6
+        out.push({ x: dayMs, o: round2(open), h: round2(high), l: round2(low), c: round2(close) });
+        prevClose = close;
+      }
+      return out;
+    }
+    function round2(x) { return Math.round(x * 100) / 100; }
+
+    const startUtcMs = Date.UTC(2025, 0, 1); // 2025-01-01 (UTC)
+    const ohlcData = genOHLC(startUtcMs, 30, 100);
+safeCreate("Financial Candlestick", () => {
+      new Chart(document.getElementById("cCandle"), {
+        type: "candlestick",
+        data: { datasets: [{ label: "示意 OHLC", data: ohlcData }] },
+        options: {
+          ...baseOptions("Financial Candlestick"),
+          scales: {
+            x: { type: "time", time: { unit: "day", tooltipFormat: "yyyy-MM-dd" }, ticks: { source: "data" } },
+            y: { title: { display: true, text: "Price" } }
+          }
+        }
+      });
+    });
+
+    // ========= 2) OHLC =========
+    safeCreate("Financial OHLC", () => {
+      new Chart(document.getElementById("cOHLC"), {
+        type: "ohlc",
+        data: { datasets: [{ label: "示意 OHLC", data: ohlcData }] },
+        options: {
+          ...baseOptions("Financial OHLC"),
+          scales: {
+            x: { type: "time", time: { unit: "day", tooltipFormat: "yyyy-MM-dd" }, ticks: { source: "data" } },
+            y: { title: { display: true, text: "Price" } }
+          }
+        }
+      });
+    });
+
+    // ========= 3) Treemap =========
+    const treemapTree = [
+      { category: "前端", item: "HTML", value: 22 },
+      { category: "前端", item: "CSS", value: 18 },
+      { category: "前端", item: "JavaScript", value: 28 },
+      { category: "資料視覺化", item: "Chart.js", value: 20 },
+      { category: "資料視覺化", item: "D3.js", value: 12 },
+      { category: "其他", item: "API", value: 10 },
+      { category: "其他", item: "Canvas", value: 8 }
+    ];
+
+    safeCreate("Treemap", () => {
+      new Chart(document.getElementById("cTreemap"), {
+        type: "treemap",
+        data: {
+          datasets: [{
+            label: "學習主題占比（示意）",
+            tree: treemapTree,
+            key: "value",
+            groups: ["category", "item"],
+            spacing: 0.8,
+            borderWidth: 1,
+            borderColor: "rgba(17, 24, 39, 0.25)",
+            backgroundColor(ctx) {
+              const raw = ctx.raw;
+              const cat = raw && raw.g ? raw.g[0] : "";
+              const m = {
+                "前端": "rgba(54, 162, 235, 0.65)",
+                "資料視覺化": "rgba(255, 159, 64, 0.65)",
+                "其他": "rgba(75, 192, 192, 0.65)"
+              };
+              return m[cat] || "rgba(153, 102, 255, 0.65)";
+            },
+            captions: {
+              display: true,
+              color: "#111827",
+              font: { size: 12 },
+              formatter(ctx) {
+                const raw = ctx.raw;
+                if (!raw) return "";
+                const item = raw.g && raw.g[1] ? raw.g[1] : "";
+                return item + " (" + raw.v + ")";
+              }
+            }
+          }]
+        },
+        options: {
+          ...baseOptions("Treemap"),
+          plugins: { legend: { display: false }, title: { display: true, text: "Treemap" } }
+        }
+      });
+    });
+
+    // ========= 4) Matrix Heatmap =========
+    const xLabels = ["一", "二", "三", "四", "五"];
+    const yLabels = ["A", "B", "C", "D"];
+
+    const matrixData = [];
+    for (let yi = 0; yi < yLabels.length; yi++) {
+      for (let xi = 0; xi < xLabels.length; xi++) {
+        matrixData.push({ x: xLabels[xi], y: yLabels[yi], v: Math.round(Math.random() * 100) });
+      }
+    }
+
+    safeCreate("Matrix Heatmap", () => {
+      new Chart(document.getElementById("cMatrix"), {
+        type: "matrix",
+        data: {
+          datasets: [{
+            label: "熱度值",
+            data: matrixData,
+            backgroundColor(ctx) {
+              const v = ctx.raw && ctx.raw.v ? ctx.raw.v : 0;
+              return "rgba(255, 99, 132, " + (0.15 + v / 100 * 0.75) + ")";
+            },
+            borderColor: "rgba(17, 24, 39, 0.2)",
+            borderWidth: 1,
+            width(ctx) {
+              const a = ctx.chart.chartArea || { width: 1 };
+              return a.width / xLabels.length - 2;
+            },
+            height(ctx) {
+              const a = ctx.chart.chartArea || { height: 1 };
+              return a.height / yLabels.length - 2;
+            }
+          }]
+        },
+        options: {
+          ...baseOptions("Matrix Heatmap"),
+          scales: {
+            x: { type: "category", labels: xLabels, offset: true, grid: { display: false } },
+            y: { type: "category", labels: yLabels, offset: true, grid: { display: false } }
+          },
+          plugins: {
+            title: { display: true, text: "Matrix Heatmap" },
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  const r = items[0].raw;
+                  return `(${r.x}, ${r.y})`;
+                },
+                label(item) {
+                  return `v = ${item.raw.v}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+
+    // ========= 5) Boxplot =========
+    safeCreate("Boxplot", () => {
+      // Boxplot 的資料可以直接給「數字陣列」，外掛會自動算 min/q1/median/q3/max
+      const makeSamples = (center) =>
+        Array.from({ length: 30 }, () => Math.round((center + (Math.random() - 0.5) * 40) * 10) / 10);
+
+      new Chart(document.getElementById("cBox"), {
+        type: "boxplot",
+        data: {
+          labels: ["一班", "二班", "三班", "四班"],
+          datasets: [{
+            label: "分數分佈（示意，30筆/班）",
+            backgroundColor: "rgba(54, 162, 235, 0.45)",
+            borderColor: "rgba(54, 162, 235, 0.9)",
+            borderWidth: 1,
+            outlierColor: "rgba(17, 24, 39, 0.8)",
+            data: [
+              makeSamples(70),
+              makeSamples(75),
+              makeSamples(65),
+              makeSamples(80)
+            ]
+          }]
+        },
+        options: baseOptions("Boxplot")
+      });
+    });
+// ========= 6) Sankey =========
+    const sankeyLinks = [
+      { from: "來源A", to: "中繼1", flow: 10 },
+      { from: "來源A", to: "中繼2", flow:  6 },
+      { from: "來源B", to: "中繼1", flow:  8 },
+      { from: "來源B", to: "中繼2", flow:  4 },
+      { from: "中繼1", to: "結果X", flow: 12 },
+      { from: "中繼1", to: "結果Y", flow:  6 },
+      { from: "中繼2", to: "結果X", flow:  5 },
+      { from: "中繼2", to: "結果Y", flow:  5 }
+    ];
+
+    safeCreate("Sankey", () => {
+      new Chart(document.getElementById("cSankey"), {
+        type: "sankey",
+        data: { datasets: [{ label: "流程（示意）", data: sankeyLinks }] },
+        options: {
+          ...baseOptions("Sankey"),
+          plugins: { legend: { display: false }, title: { display: true, text: "Sankey" } }
+        }
+      });
+    });
+
+    // ========= 7) WordCloud =========
+    const words = ["Chart.js","Canvas","SVG","D3.js","API","DOM","Event","Async","JSON","Fetch","Promise","Module"];
+    const weights = words.map(() => Math.round(10 + Math.random() * 60));
+
+    safeCreate("WordCloud", () => {
+      new Chart(document.getElementById("cWordCloud"), {
+        type: "wordCloud",
+        data: { labels: words, datasets: [{ label: "關鍵字權重（示意）", data: weights }] },
+        options: {
+          ...baseOptions("WordCloud"),
+          plugins: { legend: { display: false }, title: { display: true, text: "WordCloud" } }
+        }
+      });
+    });
+
+    // 初始渲染
+    renderStatus();
+  </script>
+</body>
+</html>
